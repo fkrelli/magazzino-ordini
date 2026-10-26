@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.epicode</groupId>
-	<artifactId>magazzino-ordini-fork</artifactId>
+	<artifactId>magazzino-ordini</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>magazzino-ordini</name>
 	<description>Ordini e magazzino: lo scheletro del Modulo 6 (pipeline di agenti con GitHub Copilot)</description>
@@ -54,28 +54,6 @@
 
 	<build>
 		<plugins>
-			<plugin>
-				<groupId>com.diffplug.spotless</groupId>
-				<artifactId>spotless-maven-plugin</artifactId>
-				<version>3.10.4</version>
-				<configuration>
-					<java>
-						<eclipse>
-							<version>4.41</version>
-							<file>${project.basedir}/eclipse-formatter.xml</file>
-						</eclipse>
-					</java>
-				</configuration>
-				<executions>
-					<execution>
-						<id>check-code-style</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>

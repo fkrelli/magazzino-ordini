@@ -11,7 +11,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.MockMvc;
 
 /** Le pagine principali si aprono e il form crea davvero un ordine. */
@@ -53,30 +52,5 @@ class PagineTest {
     void ordineInesistente() throws Exception {
         mvc.perform(get("/ordini/9999"))
                 .andExpect(status().isNotFound());
-    }
-
-    @Test
-    void dettaglioEdElencoMostranoScontiSpedizioneETotaleDaPagare() throws Exception {
-        MvcResult creazione = mvc.perform(post("/ordini")
-                        .param("cliente", "Ferramenta Bianchi")
-                        .param("righe[0].codice", "GUA-L")
-                        .param("righe[0].quantita", "10"))
-                .andExpect(status().is3xxRedirection())
-                .andReturn();
-        String urlDettaglio = creazione.getResponse().getRedirectedUrl();
-
-        mvc.perform(get(urlDettaglio))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("5%")))
-                .andExpect(content().string(containsString("30,40 €")))
-                .andExpect(content().string(containsString("Totale merce")))
-                .andExpect(content().string(containsString("Spedizione")))
-                .andExpect(content().string(containsString("9,90 €")))
-                .andExpect(content().string(containsString("Totale da pagare")))
-                .andExpect(content().string(containsString("40,30 €")));
-
-        mvc.perform(get("/ordini"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("40,30 €")));
     }
 }

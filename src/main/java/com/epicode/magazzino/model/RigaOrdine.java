@@ -13,12 +13,6 @@ import java.math.RoundingMode;
 @Entity
 public class RigaOrdine {
 
-    private static final int SOGLIA_SCONTO_MEDIO = 10;
-    private static final int SOGLIA_SCONTO_MASSIMO = 50;
-    private static final int SCONTO_MEDIO_PERCENTUALE = 5;
-    private static final int SCONTO_MASSIMO_PERCENTUALE = 10;
-    private static final BigDecimal CENTO = BigDecimal.valueOf(100);
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -49,24 +43,9 @@ public class RigaOrdine {
         quantita += altri;
     }
 
-    /** Percentuale di sconto determinata dalla quantità totale della riga. */
-    public int scontoPercentuale() {
-        if (quantita >= SOGLIA_SCONTO_MASSIMO) {
-            return SCONTO_MASSIMO_PERCENTUALE;
-        }
-        if (quantita >= SOGLIA_SCONTO_MEDIO) {
-            return SCONTO_MEDIO_PERCENTUALE;
-        }
-        return 0;
-    }
-
-    /** Subtotale scontato della riga, arrotondato al centesimo con HALF_UP. */
+    /** Prezzo unitario per quantità, arrotondato al centesimo. */
     public BigDecimal subtotale() {
-        BigDecimal importoLordo = prezzoUnitario.multiply(BigDecimal.valueOf(quantita));
-        BigDecimal importoScontato = importoLordo.multiply(
-                CENTO.subtract(BigDecimal.valueOf(scontoPercentuale())))
-                .divide(CENTO);
-        return importoScontato
+        return prezzoUnitario.multiply(BigDecimal.valueOf(quantita))
                 .setScale(2, RoundingMode.HALF_UP);
     }
 

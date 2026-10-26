@@ -22,8 +22,6 @@ scrivere, verificare e rivedere agli agenti.
 
 ```powershell
 .\mvnw.cmd test              # tutti i test devono essere verdi
-.\mvnw.cmd spotless:apply    # formatta il codice Java
-.\mvnw.cmd verify            # test + verifica dello stile
 .\mvnw.cmd spring-boot:run   # poi apri http://localhost:8080
 ```
 
