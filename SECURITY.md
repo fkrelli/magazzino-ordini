@@ -2,7 +2,7 @@
 
 ## Segnalare una vulnerabilità
 
-Non aprire una issue pubblica. Usa **Security → Report a vulnerability** di questo
+Non aprire una issue pubblica. Usa **Security and quality → Report a vulnerability** di questo
 repository (private vulnerability reporting): la segnalazione resta visibile solo ai
 manutentori finché non è corretta.
 
