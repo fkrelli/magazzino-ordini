@@ -68,3 +68,6 @@ esercizio della giornata 1.
 | Giornata | Consegna |
 |---|---|
 | M6 · G1 — Feature authoring e test generation | [docs/corso/M6-G1.md](docs/corso/M6-G1.md) |
+| M6 · G2 — Code review automatizzata e architecture compliance | [docs/corso/M6-G2.md](docs/corso/M6-G2.md) |
+| M6 · G3 — Security scanning e pre-deploy | [docs/corso/M6-G3.md](docs/corso/M6-G3.md) |
+| M6 · G4 — Composizione e coordinamento di più agenti | [docs/corso/M6-G4.md](docs/corso/M6-G4.md) |
