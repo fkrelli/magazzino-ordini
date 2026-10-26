@@ -1,59 +1,50 @@
 package com.epicode.magazzino.web;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import org.apache.commons.text.StringSubstitutor;
-import org.springframework.jdbc.core.JdbcTemplate;
+import com.epicode.magazzino.model.NomeFileReport;
+import com.epicode.magazzino.model.RichiestaNonValidaException;
+import com.epicode.magazzino.service.ReportService;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 
-/**
- * Modulo report consegnato dal fornitore esterno.
- * Funziona, ma nessuno lo ha mai rivisto.
- */
+/** Report degli ordini. Nessuna credenziale qui: se un giorno servirà l'FTP, arriverà da una variabile d'ambiente. */
 @Controller
 @RequestMapping("/report")
 public class ReportController {
 
-    // Credenziali del server FTP del fornitore, per l'invio notturno dei report
-    private static final String FTP_UTENTE = "magazzino";
-    private static final String FTP_PASSWORD = "Fornitore2026!";
+    private final ReportService report;
 
-    private final JdbcTemplate jdbc;
-
-    public ReportController(JdbcTemplate jdbc) {
-        this.jdbc = jdbc;
+    public ReportController(ReportService report) {
+        this.report = report;
     }
 
-    /** Ordini di un cliente: /report/ordini?cliente=Rossi */
     @GetMapping("/ordini")
     public String ordini(@RequestParam String cliente, Model model) {
-        String sql = "SELECT id, cliente, stato FROM ordini WHERE cliente = '" + cliente + "'";
-        model.addAttribute("righe", jdbc.queryForList(sql));
-        model.addAttribute("titolo", "Ordini di <b>" + cliente + "</b>");
+        model.addAttribute("righe", report.ordiniDi(cliente));
+        model.addAttribute("titolo", "Ordini di " + cliente);
         return "report";
     }
 
-    /** Scarica un report già generato: /report/file?nome=ordini-ottobre.csv */
     @GetMapping("/file")
-    @ResponseBody
-    public byte[] file(@RequestParam String nome) throws IOException {
-        return Files.readAllBytes(Path.of("report", nome));
+    public ResponseEntity<byte[]> file(@RequestParam String nome) {
+        byte[] contenuto = report.file(new NomeFileReport(nome));
+        return ResponseEntity.ok().contentType(MediaType.parseMediaType("text/csv")).body(contenuto);
     }
 
-    /** Intestazione con segnaposto: /report/intestazione?modello=Report del ${date:dd/MM/yyyy} */
     @GetMapping("/intestazione")
-    @ResponseBody
-    public String intestazione(@RequestParam String modello) {
-        return StringSubstitutor.createInterpolator().replace(modello);
+    public ResponseEntity<String> intestazione(@RequestParam String modello) {
+        return ResponseEntity.ok().contentType(MediaType.TEXT_PLAIN).body(report.intestazione(modello));
     }
 
-    String credenzialiFtp() {
-        return FTP_UTENTE + ":" + FTP_PASSWORD;
+    @ExceptionHandler(RichiestaNonValidaException.class)
+    public ResponseEntity<String> richiestaNonValida(RichiestaNonValidaException e) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).contentType(MediaType.TEXT_PLAIN)
+                .body(e.getMessage());
     }
 }

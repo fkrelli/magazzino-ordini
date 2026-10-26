@@ -1,0 +1,14 @@
+# Aggiornamenti di versione: Dependabot apre una PR a settimana per le dipendenze
+# Maven e per le action dei workflow. Gli aggiornamenti di sicurezza (security updates)
+# si attivano a parte, in Settings → Advanced Security.
+version: 2
+updates:
+  - package-ecosystem: "maven"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
