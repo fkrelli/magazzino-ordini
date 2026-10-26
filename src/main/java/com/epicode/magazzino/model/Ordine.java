@@ -27,6 +27,10 @@ import java.util.List;
 @Table(name = "ordini")
 public class Ordine {
 
+    private static final BigDecimal SOGLIA_SPEDIZIONE_GRATUITA = new BigDecimal("150.00");
+    private static final BigDecimal COSTO_SPEDIZIONE = new BigDecimal("9.90");
+    private static final BigDecimal SPEDIZIONE_GRATUITA = BigDecimal.ZERO.setScale(2);
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -72,12 +76,26 @@ public class Ordine {
         righe.add(new RigaOrdine(this, prodotto, quantita));
     }
 
+    /** Somma i subtotali scontati delle righe dell'ordine. */
     public BigDecimal totale() {
         BigDecimal totale = BigDecimal.ZERO.setScale(2);
         for (RigaOrdine riga : righe) {
             totale = totale.add(riga.subtotale());
         }
         return totale;
+    }
+
+    /** Restituisce il costo di spedizione in base al totale della merce scontata. */
+    public BigDecimal spedizione() {
+        if (totale().compareTo(SOGLIA_SPEDIZIONE_GRATUITA) >= 0) {
+            return SPEDIZIONE_GRATUITA;
+        }
+        return COSTO_SPEDIZIONE;
+    }
+
+    /** Somma il totale della merce e il costo di spedizione. */
+    public BigDecimal totaleDaPagare() {
+        return totale().add(spedizione());
     }
 
     public void spedisci() {
