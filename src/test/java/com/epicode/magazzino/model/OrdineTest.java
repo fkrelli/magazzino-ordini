@@ -65,7 +65,7 @@ class OrdineTest {
     void unOrdineSpeditoNonSiAnnulla() {
         Ordine ordine = new Ordine("Rossi", ADESSO);
         ordine.aggiungiRiga(trapano, 1);
-        ordine.spedisci();
+        ordine.spedisci(new CodiceTracking("IT123456789IT"));
         assertThrows(OperazioneNonConsentitaException.class, ordine::annulla);
         assertEquals(4, trapano.getDisponibili());
     }
@@ -83,8 +83,27 @@ class OrdineTest {
     void nonSiAggiungonoRigheAUnOrdineSpedito() {
         Ordine ordine = new Ordine("Rossi", ADESSO);
         ordine.aggiungiRiga(viti, 1);
-        ordine.spedisci();
+        ordine.spedisci(new CodiceTracking("IT123456789IT"));
         assertThrows(OperazioneNonConsentitaException.class, () -> ordine.aggiungiRiga(viti, 1));
+    }
+
+    @Test
+    void spedendoIlCodiceDiTrackingRestaNellOrdine() {
+        Ordine ordine = new Ordine("Rossi", ADESSO);
+        ordine.aggiungiRiga(viti, 1);
+        ordine.spedisci(new CodiceTracking("it123456789it"));
+        assertEquals(StatoOrdine.SPEDITO, ordine.getStato());
+        assertEquals("IT123456789IT", ordine.getTracking());
+    }
+
+    @Test
+    void unOrdineSpeditoNonSiRispedisceConUnAltroCodice() {
+        Ordine ordine = new Ordine("Rossi", ADESSO);
+        ordine.aggiungiRiga(viti, 1);
+        ordine.spedisci(new CodiceTracking("IT123456789IT"));
+        assertThrows(OperazioneNonConsentitaException.class,
+                () -> ordine.spedisci(new CodiceTracking("IT987654321IT")));
+        assertEquals("IT123456789IT", ordine.getTracking());
     }
 
     @Test

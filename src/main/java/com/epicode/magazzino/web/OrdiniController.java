@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 /** Il controller traduce HTTP in chiamate al service: nessuna regola di business qui. */
@@ -58,9 +59,10 @@ public class OrdiniController {
     }
 
     @PostMapping("/{id}/spedisci")
-    public String spedisci(@PathVariable Long id, RedirectAttributes redirect) {
+    public String spedisci(@PathVariable Long id, @RequestParam(defaultValue = "") String tracking,
+                           RedirectAttributes redirect) {
         try {
-            ordini.spedisci(id);
+            ordini.spedisci(id, tracking);
             redirect.addFlashAttribute("messaggio", "Ordine spedito");
         } catch (MagazzinoException e) {
             redirect.addFlashAttribute("errore", e.getMessage());

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.epicode.magazzino.model.OperazioneNonConsentitaException;
 import com.epicode.magazzino.model.Ordine;
 import com.epicode.magazzino.model.Prodotto;
 import com.epicode.magazzino.model.RichiestaNonValidaException;
@@ -57,6 +58,15 @@ class OrdineServiceTest {
     void scortaInsufficiente() {
         NuovoOrdine richiesta = new NuovoOrdine("Bianchi", List.of(new NuovoOrdine.Riga("T-MART", 4)));
         assertThrows(ScortaInsufficienteException.class, () -> ordini.crea(richiesta));
+    }
+
+    @Test
+    void loStessoTrackingNonSiUsaPerDueOrdini() {
+        Ordine primo = ordini.crea(new NuovoOrdine("Bianchi", List.of(new NuovoOrdine.Riga("T-VITI", 1))));
+        Ordine secondo = ordini.crea(new NuovoOrdine("Verdi", List.of(new NuovoOrdine.Riga("T-VITI", 1))));
+        ordini.spedisci(primo.getId(), "IT123456789IT");
+        assertThrows(OperazioneNonConsentitaException.class,
+                () -> ordini.spedisci(secondo.getId(), "it123456789it"));
     }
 
     @Test
