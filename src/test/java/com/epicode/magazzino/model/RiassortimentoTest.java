@@ -27,10 +27,12 @@ class RiassortimentoTest {
     }
 
     @Test
-    void notaDiDuecentoCaratteriSiAccettaDuecentounoNo() {
-        String duecento = "x".repeat(200);
-        assertEquals(duecento, new Riassortimento(5, duecento).nota());
-        assertThrows(RichiestaNonValidaException.class, () -> new Riassortimento(5, duecento + "x"));
-        assertThrows(RichiestaNonValidaException.class, () -> new Riassortimento(5, duecento + " "));
+    void notaDiDuecentocinquantaCaratteriSiAccettaDuecentocinquantunoNo() {
+        String duecentocinquanta = "x".repeat(250);
+        assertEquals(duecentocinquanta, new Riassortimento(5, duecentocinquanta).nota());
+        assertThrows(RichiestaNonValidaException.class,
+                () -> new Riassortimento(5, duecentocinquanta + "x"));
+        assertThrows(RichiestaNonValidaException.class,
+                () -> new Riassortimento(5, duecentocinquanta + " "));
     }
 }

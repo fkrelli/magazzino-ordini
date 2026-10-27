@@ -74,7 +74,7 @@ class PagineTest {
                 .andExpect(content().string(containsString("min=\"1\"")))
                 .andExpect(content().string(containsString("max=\"1000\"")))
                 .andExpect(content().string(containsString("step=\"1\"")))
-                .andExpect(content().string(containsString("maxlength=\"200\"")));
+                .andExpect(content().string(containsString("maxlength=\"250\"")));
     }
 
     @Test

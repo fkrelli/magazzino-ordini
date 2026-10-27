@@ -7,7 +7,7 @@ package com.epicode.magazzino.model;
 public record Riassortimento(int quantita, String nota) {
 
     public static final int MASSIMO_PEZZI = 1000;
-    public static final int MASSIMO_NOTA = 200;
+    public static final int MASSIMO_NOTA = 250;
 
     public Riassortimento {
         if (quantita < 1 || quantita > MASSIMO_PEZZI) {
