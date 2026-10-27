@@ -33,6 +33,7 @@ class PagineTest {
         mvc.perform(get("/prodotti"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Trapano a batteria 18V")))
+                .andExpect(content().string(containsString("Da riassortire")))
                 .andExpect(content().string(containsString("/prodotti/GUA-L/riassortimento")));
     }
 
