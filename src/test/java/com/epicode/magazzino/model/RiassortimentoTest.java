@@ -31,5 +31,6 @@ class RiassortimentoTest {
         String duecento = "x".repeat(200);
         assertEquals(duecento, new Riassortimento(5, duecento).nota());
         assertThrows(RichiestaNonValidaException.class, () -> new Riassortimento(5, duecento + "x"));
+        assertThrows(RichiestaNonValidaException.class, () -> new Riassortimento(5, duecento + " "));
     }
 }
