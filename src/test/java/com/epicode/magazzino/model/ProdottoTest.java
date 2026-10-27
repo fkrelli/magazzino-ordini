@@ -43,6 +43,18 @@ class ProdottoTest {
     }
 
     @Test
+    void daRiassortireQuandoGiacenzaUgualeOSottoLaScortaMinima() {
+        Prodotto sottoScorta = viti();
+        sottoScorta.preleva(8);
+        Prodotto allaScortaMinima = viti();
+        allaScortaMinima.preleva(7);
+
+        assertTrue(sottoScorta.daRiassortire());
+        assertTrue(allaScortaMinima.daRiassortire());
+        assertFalse(viti().daRiassortire());
+    }
+
+    @Test
     void prezzoNegativoRifiutato() {
         assertThrows(RichiestaNonValidaException.class,
                 () -> new Prodotto("X", "X", new BigDecimal("-1"), 1, 0));

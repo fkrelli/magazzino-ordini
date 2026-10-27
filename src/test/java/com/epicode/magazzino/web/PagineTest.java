@@ -28,6 +28,7 @@ class PagineTest {
         @Autowired
         private CatalogoService catalogo;
 
+<<<<<<< HEAD
         @Test
         void elencoProdotti() throws Exception {
                 mvc.perform(get("/prodotti"))
@@ -37,6 +38,16 @@ class PagineTest {
                                 .andExpect(content().string(containsString("sottoscorta")))
                                 .andExpect(content().string(containsString("/prodotti/GUA-L/riassortimento")));
         }
+=======
+    @Test
+    void elencoProdotti() throws Exception {
+        mvc.perform(get("/prodotti"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Trapano a batteria 18V")))
+                .andExpect(content().string(containsString("Da riassortire")))
+                .andExpect(content().string(containsString("/prodotti/GUA-L/riassortimento")));
+    }
+>>>>>>> 6d583315830b852b16cccfbd6e77069536901e2b
 
         @Test
         void ilFormCreaUnOrdineEPortaAlDettaglio() throws Exception {
