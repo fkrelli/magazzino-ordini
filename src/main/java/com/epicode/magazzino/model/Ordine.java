@@ -27,9 +27,9 @@ import java.util.List;
 @Table(name = "ordini")
 public class Ordine {
 
-    private static final BigDecimal SOGLIA_SPEDIZIONE_GRATUITA = new BigDecimal("150.00");
-    private static final BigDecimal COSTO_SPEDIZIONE = new BigDecimal("9.90");
-    private static final BigDecimal SPEDIZIONE_GRATUITA = BigDecimal.ZERO.setScale(2);
+    /** R5: da questa soglia di merce la spedizione è gratuita. */
+    public static final BigDecimal SOGLIA_SPEDIZIONE_GRATUITA = new BigDecimal("150.00");
+    public static final BigDecimal COSTO_SPEDIZIONE = new BigDecimal("9.90");
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -76,7 +76,7 @@ public class Ordine {
         righe.add(new RigaOrdine(this, prodotto, quantita));
     }
 
-    /** Somma i subtotali scontati delle righe dell'ordine. */
+    /** R4: totale merce, somma dei subtotali già scontati. */
     public BigDecimal totale() {
         BigDecimal totale = BigDecimal.ZERO.setScale(2);
         for (RigaOrdine riga : righe) {
@@ -85,17 +85,16 @@ public class Ordine {
         return totale;
     }
 
-    /** Restituisce il costo di spedizione in base al totale della merce scontata. */
-    public BigDecimal spedizione() {
+    /** R5: 9,90 euro sotto i 150,00 euro di merce, gratuita da 150,00 in su. */
+    public BigDecimal speseSpedizione() {
         if (totale().compareTo(SOGLIA_SPEDIZIONE_GRATUITA) >= 0) {
-            return SPEDIZIONE_GRATUITA;
+            return BigDecimal.ZERO.setScale(2);
         }
         return COSTO_SPEDIZIONE;
     }
 
-    /** Somma il totale della merce e il costo di spedizione. */
     public BigDecimal totaleDaPagare() {
-        return totale().add(spedizione());
+        return totale().add(speseSpedizione());
     }
 
     public void spedisci() {
