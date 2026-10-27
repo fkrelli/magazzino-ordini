@@ -14,10 +14,10 @@ public record Riassortimento(int quantita, String nota) {
             throw new RichiestaNonValidaException(
                     "La quantità da riassortire va da 1 a " + MASSIMO_PEZZI);
         }
-        nota = (nota == null || nota.isBlank()) ? null : nota.strip();
         if (nota != null && nota.length() > MASSIMO_NOTA) {
             throw new RichiestaNonValidaException(
                     "La nota può avere al massimo " + MASSIMO_NOTA + " caratteri");
         }
+        nota = (nota == null || nota.isBlank()) ? null : nota.strip();
     }
 }
