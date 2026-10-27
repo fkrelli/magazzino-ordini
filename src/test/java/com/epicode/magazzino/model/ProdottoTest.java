@@ -1,7 +1,9 @@
 package com.epicode.magazzino.model;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
@@ -44,5 +46,16 @@ class ProdottoTest {
     void prezzoNegativoRifiutato() {
         assertThrows(RichiestaNonValidaException.class,
                 () -> new Prodotto("X", "X", new BigDecimal("-1"), 1, 0));
+    }
+
+    @Test
+    void daRiassortireAiConfini() {
+        Prodotto sopraScorta = new Prodotto("A", "A", new BigDecimal("1.00"), 4, 3);
+        Prodotto aScortaMinima = new Prodotto("B", "B", new BigDecimal("1.00"), 3, 3);
+        Prodotto sottoScorta = new Prodotto("C", "C", new BigDecimal("1.00"), 2, 3);
+
+        assertFalse(sopraScorta.daRiassortire());
+        assertTrue(aScortaMinima.daRiassortire());
+        assertTrue(sottoScorta.daRiassortire());
     }
 }
