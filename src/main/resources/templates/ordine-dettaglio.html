@@ -42,6 +42,14 @@
             <th colspan="4">Totale da pagare</th>
             <th class="num" th:text="${#numbers.formatDecimal(ordine.totaleDaPagare(), 1, 'POINT', 2, 'COMMA')} + ' €'">75,45 €</th>
         </tr>
+        <tr>
+            <th colspan="4">Spedizione</th>
+            <th class="num" th:text="${#numbers.formatDecimal(ordine.spedizione(), 1, 'POINT', 2, 'COMMA')} + ' €'">9,90 €</th>
+        </tr>
+        <tr>
+            <th colspan="4">Totale da pagare</th>
+            <th class="num" th:text="${#numbers.formatDecimal(ordine.totaleDaPagare(), 1, 'POINT', 2, 'COMMA')} + ' €'">79,80 €</th>
+        </tr>
         </tfoot>
     </table>
     <div class="azioni" th:if="${ordine.stato.name() == 'CONFERMATO'}">
