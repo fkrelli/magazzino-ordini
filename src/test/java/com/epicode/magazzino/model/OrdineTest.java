@@ -30,6 +30,44 @@ class OrdineTest {
     }
 
     @Test
+    void loScontoSegueLeFasceConTreValoriIntornoAlleSoglie() {
+        Ordine ordine = new Ordine("Rossi", ADESSO);
+        ordine.aggiungiRiga(new Prodotto("P9", "Prodotto 9", new BigDecimal("1.00"), 9, 0), 9);
+        ordine.aggiungiRiga(new Prodotto("P10", "Prodotto 10", new BigDecimal("1.00"), 10, 0), 10);
+        ordine.aggiungiRiga(new Prodotto("P11", "Prodotto 11", new BigDecimal("1.00"), 11, 0), 11);
+        ordine.aggiungiRiga(new Prodotto("P49", "Prodotto 49", new BigDecimal("1.00"), 49, 0), 49);
+        ordine.aggiungiRiga(new Prodotto("P50", "Prodotto 50", new BigDecimal("1.00"), 50, 0), 50);
+        ordine.aggiungiRiga(new Prodotto("P51", "Prodotto 51", new BigDecimal("1.00"), 51, 0), 51);
+
+        assertEquals(0, ordine.getRighe().get(0).percentualeSconto());
+        assertEquals(5, ordine.getRighe().get(1).percentualeSconto());
+        assertEquals(5, ordine.getRighe().get(2).percentualeSconto());
+        assertEquals(5, ordine.getRighe().get(3).percentualeSconto());
+        assertEquals(10, ordine.getRighe().get(4).percentualeSconto());
+        assertEquals(10, ordine.getRighe().get(5).percentualeSconto());
+    }
+
+    @Test
+    void ilSubtotaleScontatoArrotondaIlRisultatoFinaleConHalfUp() {
+        Ordine ordine = new Ordine("Rossi", ADESSO);
+        Prodotto prodotto = new Prodotto("ARROT", "Prodotto da arrotondare",
+                new BigDecimal("0.11"), 10, 0);
+        ordine.aggiungiRiga(prodotto, 10);
+
+        assertEquals(new BigDecimal("1.05"), ordine.getRighe().get(0).subtotale());
+    }
+
+    @Test
+    void quantitaNonPositiveVengonoRifiutateSenzaApplicareSconti() {
+        Ordine ordine = new Ordine("Rossi", ADESSO);
+
+        assertThrows(RichiestaNonValidaException.class, () -> ordine.aggiungiRiga(viti, 0));
+        assertThrows(RichiestaNonValidaException.class, () -> ordine.aggiungiRiga(viti, -1));
+        assertEquals(100, viti.getDisponibili());
+        assertEquals(0, ordine.getRighe().size());
+    }
+
+    @Test
     void ogniRigaPrelevaDalMagazzino() {
         Ordine ordine = new Ordine("Rossi", ADESSO);
         ordine.aggiungiRiga(trapano, 2);
@@ -43,6 +81,49 @@ class OrdineTest {
         ordine.aggiungiRiga(viti, 2);
         assertEquals(1, ordine.getRighe().size());
         assertEquals(5, ordine.getRighe().get(0).getQuantita());
+    }
+
+    @Test
+    void scontoDelloStessoProdottoSiBasaSullaQuantitaComplessiva() {
+        Ordine ordine = new Ordine("Rossi", ADESSO);
+        ordine.aggiungiRiga(viti, 5);
+        ordine.aggiungiRiga(viti, 5);
+
+        assertEquals(1, ordine.getRighe().size());
+        assertEquals(10, ordine.getRighe().get(0).getQuantita());
+        assertEquals(5, ordine.getRighe().get(0).percentualeSconto());
+        assertEquals(new BigDecimal("65.55"), ordine.getRighe().get(0).subtotale());
+    }
+
+    @Test
+    void ilTotaleMerceELaSommaDeiSubtotaliScontati() {
+        Ordine ordine = new Ordine("Rossi", ADESSO);
+        ordine.aggiungiRiga(new Prodotto("T10", "Prodotto 10", new BigDecimal("6.90"), 10, 0), 10);
+        ordine.aggiungiRiga(new Prodotto("T50", "Prodotto 50", new BigDecimal("1.00"), 50, 0), 50);
+
+        assertEquals(new BigDecimal("110.55"), ordine.totale());
+    }
+
+    @Test
+    void laSpedizioneSiPagaSottoLaSogliaDiCentoECinquantaEuro() {
+        Ordine ordine = new Ordine("Rossi", ADESSO);
+        ordine.aggiungiRiga(new Prodotto("S149", "Ordine sotto soglia",
+                new BigDecimal("149.99"), 1, 0), 1);
+
+        assertEquals(new BigDecimal("149.99"), ordine.totale());
+        assertEquals(new BigDecimal("9.90"), ordine.speseSpedizione());
+        assertEquals(new BigDecimal("159.89"), ordine.totaleDaPagare());
+    }
+
+    @Test
+    void laSpedizioneEGratuitaDaCentoECinquantaEuro() {
+        Ordine ordine = new Ordine("Rossi", ADESSO);
+        ordine.aggiungiRiga(new Prodotto("S150", "Ordine a soglia",
+                new BigDecimal("150.00"), 1, 0), 1);
+
+        assertEquals(new BigDecimal("150.00"), ordine.totale());
+        assertEquals(new BigDecimal("0.00"), ordine.speseSpedizione());
+        assertEquals(new BigDecimal("150.00"), ordine.totaleDaPagare());
     }
 
     @Test

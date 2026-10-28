@@ -33,7 +33,7 @@ public class Prodotto {
     }
 
     public Prodotto(String codice, String nome, BigDecimal prezzo, int disponibili,
-                    int scortaMinima) {
+            int scortaMinima) {
         if (codice == null || codice.isBlank() || nome == null || nome.isBlank()) {
             throw new RichiestaNonValidaException("Codice e nome del prodotto sono obbligatori");
         }
@@ -47,7 +47,10 @@ public class Prodotto {
         this.scortaMinima = scortaMinima;
     }
 
-    /** Toglie pezzi dalla giacenza. Se non bastano non tocca nulla e lancia l'eccezione. */
+    /**
+     * Toglie pezzi dalla giacenza. Se non bastano non tocca nulla e lancia
+     * l'eccezione.
+     */
     public void preleva(int quantita) {
         if (quantita <= 0) {
             throw new RichiestaNonValidaException("La quantità deve essere maggiore di zero");
@@ -64,6 +67,10 @@ public class Prodotto {
             throw new RichiestaNonValidaException("La quantità deve essere maggiore di zero");
         }
         disponibili += quantita;
+    }
+
+    public boolean daRiassortire() {
+        return disponibili <= scortaMinima;
     }
 
     public Long getId() {
