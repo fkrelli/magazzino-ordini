@@ -4,6 +4,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -59,7 +60,7 @@ class PagineTest {
     void riassortimentoValidoPortaAiMovimenti() throws Exception {
         mvc.perform(post("/prodotti/MET-5/riassortimento").param("quantita", "10").param("nota", "Arrivo"))
                 .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("/movimenti"));
+                .andExpect(redirectedUrl("/movimenti"));
         mvc.perform(get("/movimenti"))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString("Arrivo")));
