@@ -4,7 +4,6 @@
 <head th:replace="~{fragments :: head('Prodotti')}"></head>
 
 <body>
-<<<<<<< HEAD
     <header th:replace="~{fragments :: menu}"></header>
     <main>
         <h1>Prodotti</h1>
@@ -29,46 +28,13 @@
                     <td class="num" th:text="${p.disponibili}">240</td>
                     <td class="num" th:text="${p.scortaMinima}">50</td>
                     <td>
-                        <span th:if="${p.daRiassortire() and p.disponibili > 0}" class="avviso-scorta">Da
-                            riassortire</span>
+                        <span th:if="${p.daRiassortire() and p.disponibili > 0}" class="avviso-scorta">Da riassortire</span>
                         <a th:href="@{/prodotti/{codice}/riassortimento(codice=${p.codice})}">Riassortisci</a>
                     </td>
                 </tr>
             </tbody>
         </table>
     </main>
-=======
-<header th:replace="~{fragments :: menu}"></header>
-<main>
-    <h1>Prodotti</h1>
-    <table>
-        <thead>
-        <tr>
-            <th>Codice</th>
-            <th>Nome</th>
-            <th class="num">Prezzo</th>
-            <th class="num">Disponibili</th>
-            <th class="num">Scorta minima</th>
-            <th></th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr th:each="p : ${prodotti}"
-            th:classappend="${p.disponibili == 0} ? 'esaurito'">
-            <td><code th:text="${p.codice}">VIT-M6-30</code></td>
-            <td>
-                <span th:text="${p.nome}">Viti</span>
-                <span class="avviso-scorta" th:if="${p.daRiassortire()}">Da riassortire</span>
-            </td>
-            <td class="num" th:text="${#numbers.formatDecimal(p.prezzo, 1, 'POINT', 2, 'COMMA')} + ' €'">6,90 €</td>
-            <td class="num" th:text="${p.disponibili}">240</td>
-            <td class="num" th:text="${p.scortaMinima}">50</td>
-            <td><a th:href="@{/prodotti/{codice}/riassortimento(codice=${p.codice})}">Riassortisci</a></td>
-        </tr>
-        </tbody>
-    </table>
-</main>
->>>>>>> 6d583315830b852b16cccfbd6e77069536901e2b
 </body>
 
 </html>
