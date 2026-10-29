@@ -18,56 +18,49 @@ import org.springframework.test.web.servlet.MockMvc;
 @AutoConfigureMockMvc
 class PagineTest {
 
-    @Autowired
-    private MockMvc mvc;
+  @Autowired
+  private MockMvc mvc;
 
-    @Test
-    void elencoProdotti() throws Exception {
-        mvc.perform(get("/prodotti"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Trapano a batteria 18V")));
-    }
+  @Test
+  void elencoProdotti() throws Exception {
+    mvc.perform(get("/prodotti")).andExpect(status().isOk())
+        .andExpect(content().string(containsString("Trapano a batteria 18V")));
+  }
 
-    @Test
-    void ilFormCreaUnOrdineEPortaAlDettaglio() throws Exception {
-        mvc.perform(post("/ordini")
-                        .param("cliente", "Ferramenta Bianchi")
-                        .param("righe[0].codice", "GUA-L")
-                        .param("righe[0].quantita", "2"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("/ordini/*"));
-    }
+  @Test
+  void ilFormCreaUnOrdineEPortaAlDettaglio() throws Exception {
+    mvc.perform(post("/ordini").param("cliente", "Ferramenta Bianchi")
+        .param("righe[0].codice", "GUA-L").param("righe[0].quantita", "2"))
+        .andExpect(status().is3xxRedirection())
+        .andExpect(redirectedUrlPattern("/ordini/*"));
+  }
 
-    @Test
-    void ilFormMostraLErroreSeLaScortaNonBasta() throws Exception {
-        mvc.perform(post("/ordini")
-                        .param("cliente", "Ferramenta Bianchi")
-                        .param("righe[0].codice", "NAS-50")
-                        .param("righe[0].quantita", "1"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Scorta insufficiente per NAS-50")));
-    }
+  @Test
+  void ilFormMostraLErroreSeLaScortaNonBasta() throws Exception {
+    mvc.perform(post("/ordini").param("cliente", "Ferramenta Bianchi")
+        .param("righe[0].codice", "NAS-50").param("righe[0].quantita", "1"))
+        .andExpect(status().isOk()).andExpect(content()
+            .string(containsString("Scorta insufficiente per NAS-50")));
+  }
 
-    @Test
-    void riassortimentoNonValidoMostraLErrore() throws Exception {
-        mvc.perform(post("/prodotti/GUA-L/riassortimento").param("quantita", "0"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("La quantità da riassortire va da 1 a 1000")));
-    }
+  @Test
+  void riassortimentoNonValidoMostraLErrore() throws Exception {
+    mvc.perform(post("/prodotti/GUA-L/riassortimento").param("quantita", "0"))
+        .andExpect(status().isOk()).andExpect(content().string(
+            containsString("La quantità da riassortire va da 1 a 1000")));
+  }
 
-    @Test
-    void riassortimentoValidoPortaAiMovimenti() throws Exception {
-        mvc.perform(post("/prodotti/MET-5/riassortimento").param("quantita", "10").param("nota", "Arrivo"))
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrlPattern("/movimenti"));
-        mvc.perform(get("/movimenti"))
-                .andExpect(status().isOk())
-                .andExpect(content().string(containsString("Arrivo")));
-    }
+  @Test
+  void riassortimentoValidoPortaAiMovimenti() throws Exception {
+    mvc.perform(post("/prodotti/MET-5/riassortimento").param("quantita", "10")
+        .param("nota", "Arrivo")).andExpect(status().is3xxRedirection())
+        .andExpect(redirectedUrlPattern("/movimenti"));
+    mvc.perform(get("/movimenti")).andExpect(status().isOk())
+        .andExpect(content().string(containsString("Arrivo")));
+  }
 
-    @Test
-    void ordineInesistente() throws Exception {
-        mvc.perform(get("/ordini/9999"))
-                .andExpect(status().isNotFound());
-    }
+  @Test
+  void ordineInesistente() throws Exception {
+    mvc.perform(get("/ordini/9999")).andExpect(status().isNotFound());
+  }
 }

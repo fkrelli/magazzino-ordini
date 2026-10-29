@@ -6,10 +6,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface OrdineRepository extends JpaRepository<Ordine, Long> {
 
-    List<Ordine> findAllByOrderByCreatoIlDesc();
+  List<Ordine> findAllByOrderByCreatoIlDesc();
 
-    boolean existsByTracking(String tracking);
+  boolean existsByTracking(String tracking);
 
-    /** Query derivata: il parametro viaggia separato dall'SQL, niente iniezione. */
-    List<Ordine> findByClienteOrderByCreatoIlDesc(String cliente);
+  /**
+   * Query derivata: il parametro viaggia separato dall'SQL, niente iniezione.
+   */
+  List<Ordine> findByClienteOrderByCreatoIlDesc(String cliente);
 }

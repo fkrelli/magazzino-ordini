@@ -10,104 +10,108 @@ import org.junit.jupiter.api.Test;
 
 class OrdineTest {
 
-    private static final LocalDateTime ADESSO = LocalDateTime.of(2026, 10, 26, 9, 0);
+  private static final LocalDateTime ADESSO = LocalDateTime.of(2026, 10, 26, 9,
+      0);
 
-    private Prodotto viti;
-    private Prodotto trapano;
+  private Prodotto viti;
+  private Prodotto trapano;
 
-    @BeforeEach
-    void catalogo() {
-        viti = new Prodotto("VIT", "Viti", new BigDecimal("6.90"), 100, 10);
-        trapano = new Prodotto("TRA", "Trapano", new BigDecimal("89.00"), 5, 1);
-    }
+  @BeforeEach
+  void catalogo() {
+    viti = new Prodotto("VIT", "Viti", new BigDecimal("6.90"), 100, 10);
+    trapano = new Prodotto("TRA", "Trapano", new BigDecimal("89.00"), 5, 1);
+  }
 
-    @Test
-    void ilTotaleESommaDeiSubtotali() {
-        Ordine ordine = new Ordine("Rossi", ADESSO);
-        ordine.aggiungiRiga(viti, 3);      // 20,70
-        ordine.aggiungiRiga(trapano, 2);   // 178,00
-        assertEquals(new BigDecimal("198.70"), ordine.totale());
-    }
+  @Test
+  void ilTotaleESommaDeiSubtotali() {
+    Ordine ordine = new Ordine("Rossi", ADESSO);
+    ordine.aggiungiRiga(viti, 3); // 20,70
+    ordine.aggiungiRiga(trapano, 2); // 178,00
+    assertEquals(new BigDecimal("198.70"), ordine.totale());
+  }
 
-    @Test
-    void ogniRigaPrelevaDalMagazzino() {
-        Ordine ordine = new Ordine("Rossi", ADESSO);
-        ordine.aggiungiRiga(trapano, 2);
-        assertEquals(3, trapano.getDisponibili());
-    }
+  @Test
+  void ogniRigaPrelevaDalMagazzino() {
+    Ordine ordine = new Ordine("Rossi", ADESSO);
+    ordine.aggiungiRiga(trapano, 2);
+    assertEquals(3, trapano.getDisponibili());
+  }
 
-    @Test
-    void loStessoProdottoDueVolteFiniscenellaStessaRiga() {
-        Ordine ordine = new Ordine("Rossi", ADESSO);
-        ordine.aggiungiRiga(viti, 3);
-        ordine.aggiungiRiga(viti, 2);
-        assertEquals(1, ordine.getRighe().size());
-        assertEquals(5, ordine.getRighe().get(0).getQuantita());
-    }
+  @Test
+  void loStessoProdottoDueVolteFiniscenellaStessaRiga() {
+    Ordine ordine = new Ordine("Rossi", ADESSO);
+    ordine.aggiungiRiga(viti, 3);
+    ordine.aggiungiRiga(viti, 2);
+    assertEquals(1, ordine.getRighe().size());
+    assertEquals(5, ordine.getRighe().get(0).getQuantita());
+  }
 
-    @Test
-    void ilPrezzoDellaRigaRestaQuelloDelMomentoDellOrdine() {
-        Ordine ordine = new Ordine("Rossi", ADESSO);
-        ordine.aggiungiRiga(viti, 1);
-        assertEquals(new BigDecimal("6.90"), ordine.getRighe().get(0).getPrezzoUnitario());
-    }
+  @Test
+  void ilPrezzoDellaRigaRestaQuelloDelMomentoDellOrdine() {
+    Ordine ordine = new Ordine("Rossi", ADESSO);
+    ordine.aggiungiRiga(viti, 1);
+    assertEquals(new BigDecimal("6.90"),
+        ordine.getRighe().get(0).getPrezzoUnitario());
+  }
 
-    @Test
-    void annullareRestituisceIPezzi() {
-        Ordine ordine = new Ordine("Rossi", ADESSO);
-        ordine.aggiungiRiga(trapano, 2);
-        ordine.annulla();
-        assertEquals(StatoOrdine.ANNULLATO, ordine.getStato());
-        assertEquals(5, trapano.getDisponibili());
-    }
+  @Test
+  void annullareRestituisceIPezzi() {
+    Ordine ordine = new Ordine("Rossi", ADESSO);
+    ordine.aggiungiRiga(trapano, 2);
+    ordine.annulla();
+    assertEquals(StatoOrdine.ANNULLATO, ordine.getStato());
+    assertEquals(5, trapano.getDisponibili());
+  }
 
-    @Test
-    void unOrdineSpeditoNonSiAnnulla() {
-        Ordine ordine = new Ordine("Rossi", ADESSO);
-        ordine.aggiungiRiga(trapano, 1);
-        ordine.spedisci(new CodiceTracking("IT123456789IT"));
-        assertThrows(OperazioneNonConsentitaException.class, ordine::annulla);
-        assertEquals(4, trapano.getDisponibili());
-    }
+  @Test
+  void unOrdineSpeditoNonSiAnnulla() {
+    Ordine ordine = new Ordine("Rossi", ADESSO);
+    ordine.aggiungiRiga(trapano, 1);
+    ordine.spedisci(new CodiceTracking("IT123456789IT"));
+    assertThrows(OperazioneNonConsentitaException.class, ordine::annulla);
+    assertEquals(4, trapano.getDisponibili());
+  }
 
-    @Test
-    void unOrdineAnnullatoNonSiAnnullaDueVolte() {
-        Ordine ordine = new Ordine("Rossi", ADESSO);
-        ordine.aggiungiRiga(trapano, 1);
-        ordine.annulla();
-        assertThrows(OperazioneNonConsentitaException.class, ordine::annulla);
-        assertEquals(5, trapano.getDisponibili());
-    }
+  @Test
+  void unOrdineAnnullatoNonSiAnnullaDueVolte() {
+    Ordine ordine = new Ordine("Rossi", ADESSO);
+    ordine.aggiungiRiga(trapano, 1);
+    ordine.annulla();
+    assertThrows(OperazioneNonConsentitaException.class, ordine::annulla);
+    assertEquals(5, trapano.getDisponibili());
+  }
 
-    @Test
-    void nonSiAggiungonoRigheAUnOrdineSpedito() {
-        Ordine ordine = new Ordine("Rossi", ADESSO);
-        ordine.aggiungiRiga(viti, 1);
-        ordine.spedisci(new CodiceTracking("IT123456789IT"));
-        assertThrows(OperazioneNonConsentitaException.class, () -> ordine.aggiungiRiga(viti, 1));
-    }
+  @Test
+  void nonSiAggiungonoRigheAUnOrdineSpedito() {
+    Ordine ordine = new Ordine("Rossi", ADESSO);
+    ordine.aggiungiRiga(viti, 1);
+    ordine.spedisci(new CodiceTracking("IT123456789IT"));
+    assertThrows(OperazioneNonConsentitaException.class,
+        () -> ordine.aggiungiRiga(viti, 1));
+  }
 
-    @Test
-    void spedendoIlCodiceDiTrackingRestaNellOrdine() {
-        Ordine ordine = new Ordine("Rossi", ADESSO);
-        ordine.aggiungiRiga(viti, 1);
-        ordine.spedisci(new CodiceTracking("it123456789it"));
-        assertEquals(StatoOrdine.SPEDITO, ordine.getStato());
-        assertEquals("IT123456789IT", ordine.getTracking());
-    }
+  @Test
+  void spedendoIlCodiceDiTrackingRestaNellOrdine() {
+    Ordine ordine = new Ordine("Rossi", ADESSO);
+    ordine.aggiungiRiga(viti, 1);
+    ordine.spedisci(new CodiceTracking("it123456789it"));
+    assertEquals(StatoOrdine.SPEDITO, ordine.getStato());
+    assertEquals("IT123456789IT", ordine.getTracking());
+  }
 
-    @Test
-    void unOrdineSpeditoNonSiRispedisceConUnAltroCodice() {
-        Ordine ordine = new Ordine("Rossi", ADESSO);
-        ordine.aggiungiRiga(viti, 1);
-        ordine.spedisci(new CodiceTracking("IT123456789IT"));
-        assertThrows(OperazioneNonConsentitaException.class,
-                () -> ordine.spedisci(new CodiceTracking("IT987654321IT")));
-        assertEquals("IT123456789IT", ordine.getTracking());
-    }
+  @Test
+  void unOrdineSpeditoNonSiRispedisceConUnAltroCodice() {
+    Ordine ordine = new Ordine("Rossi", ADESSO);
+    ordine.aggiungiRiga(viti, 1);
+    ordine.spedisci(new CodiceTracking("IT123456789IT"));
+    assertThrows(OperazioneNonConsentitaException.class,
+        () -> ordine.spedisci(new CodiceTracking("IT987654321IT")));
+    assertEquals("IT123456789IT", ordine.getTracking());
+  }
 
-    @Test
-    void clienteObbligatorio() {
-        assertThrows(RichiestaNonValidaException.class, () -> new Ordine("  ", ADESSO));
-    }
+  @Test
+  void clienteObbligatorio() {
+    assertThrows(RichiestaNonValidaException.class,
+        () -> new Ordine("  ", ADESSO));
+  }
 }
