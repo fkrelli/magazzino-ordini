@@ -47,13 +47,6 @@ public class Ordine {
   @Column(nullable = false)
   private StatoOrdine stato;
 
-  /**
-   * R2: assegnato alla spedizione, poi non cambia più. R3: unico tra gli
-   * ordini.
-   */
-  @Column(unique = true)
-  private String tracking;
-
   @OneToMany(mappedBy = "ordine", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
   private List<RigaOrdine> righe = new ArrayList<>();
 
@@ -106,12 +99,11 @@ public class Ordine {
     return totale().add(speseSpedizione());
   }
 
-  public void spedisci(CodiceTracking codice) {
+  public void spedisci() {
     if (stato != StatoOrdine.CONFERMATO) {
       throw new OperazioneNonConsentitaException(
           "Si spedisce solo un ordine confermato");
     }
-    tracking = codice.valore();
     stato = StatoOrdine.SPEDITO;
   }
 
@@ -143,10 +135,6 @@ public class Ordine {
 
   public StatoOrdine getStato() {
     return stato;
-  }
-
-  public String getTracking() {
-    return tracking;
   }
 
   public List<RigaOrdine> getRighe() {

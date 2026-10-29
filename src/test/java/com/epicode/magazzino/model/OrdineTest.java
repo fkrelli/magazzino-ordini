@@ -159,7 +159,7 @@ class OrdineTest {
   void unOrdineSpeditoNonSiAnnulla() {
     Ordine ordine = new Ordine("Rossi", ADESSO);
     ordine.aggiungiRiga(trapano, 1);
-    ordine.spedisci(new CodiceTracking("IT123456789IT"));
+    ordine.spedisci();
     assertThrows(OperazioneNonConsentitaException.class, ordine::annulla);
     assertEquals(4, trapano.getDisponibili());
   }
@@ -177,7 +177,7 @@ class OrdineTest {
   void nonSiAggiungonoRigheAUnOrdineSpedito() {
     Ordine ordine = new Ordine("Rossi", ADESSO);
     ordine.aggiungiRiga(viti, 1);
-    ordine.spedisci(new CodiceTracking("IT123456789IT"));
+    ordine.spedisci();
     assertThrows(OperazioneNonConsentitaException.class,
         () -> ordine.aggiungiRiga(viti, 1));
   }
