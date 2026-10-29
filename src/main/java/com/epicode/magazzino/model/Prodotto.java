@@ -74,6 +74,10 @@ public class Prodotto {
     disponibili += quantita;
   }
 
+  public boolean daRiassortire() {
+    return disponibili <= scortaMinima;
+  }
+
   public Long getId() {
     return id;
   }
