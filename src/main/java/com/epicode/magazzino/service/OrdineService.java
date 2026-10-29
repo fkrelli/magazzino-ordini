@@ -1,8 +1,6 @@
 package com.epicode.magazzino.service;
 
-import com.epicode.magazzino.model.CodiceTracking;
 import com.epicode.magazzino.model.MovimentoMagazzino;
-import com.epicode.magazzino.model.OperazioneNonConsentitaException;
 import com.epicode.magazzino.model.Ordine;
 import com.epicode.magazzino.model.Prodotto;
 import com.epicode.magazzino.model.RichiestaNonValidaException;
@@ -70,15 +68,9 @@ public class OrdineService {
         () -> new RisorsaNonTrovataException("Ordine " + id + " non trovato"));
   }
 
-  /** R1-R3: il formato lo controlla CodiceTracking, l'unicità il service. */
-  public Ordine spedisci(Long id, String tracking) {
-    CodiceTracking codice = new CodiceTracking(tracking);
+  public Ordine spedisci(Long id) {
     Ordine ordine = trova(id);
-    if (ordini.existsByTracking(codice.valore())) {
-      throw new OperazioneNonConsentitaException(
-          "Il codice " + codice.valore() + " è già usato da un altro ordine");
-    }
-    ordine.spedisci(codice);
+    ordine.spedisci();
     return ordine;
   }
 

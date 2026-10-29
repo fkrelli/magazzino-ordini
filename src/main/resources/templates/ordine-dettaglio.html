@@ -9,7 +9,6 @@
     </h1>
     <p>Cliente: <strong th:text="${ordine.cliente}">Rossi srl</strong>
         · creato il <span th:text="${#temporals.format(ordine.creatoIl, 'dd/MM/yyyy HH:mm')}">21/10/2026</span></p>
-    <p th:if="${ordine.tracking}">Tracking: <code th:text="${ordine.tracking}">IT123456789IT</code></p>
     <div th:replace="~{fragments :: avvisi}"></div>
     <table>
         <thead>
@@ -47,8 +46,6 @@
     </table>
     <div class="azioni" th:if="${ordine.stato.name() == 'CONFERMATO'}">
         <form th:action="@{/ordini/{id}/spedisci(id=${ordine.id})}" method="post">
-            <input type="text" name="tracking" placeholder="Tracking, es. IT123456789IT"
-                   maxlength="13" size="18">
             <button type="submit" class="primario">Spedisci</button>
         </form>
         <form th:action="@{/ordini/{id}/annulla(id=${ordine.id})}" method="post">

@@ -8,8 +8,6 @@ public interface OrdineRepository extends JpaRepository<Ordine, Long> {
 
   List<Ordine> findAllByOrderByCreatoIlDesc();
 
-  boolean existsByTracking(String tracking);
-
   /**
    * Query derivata: il parametro viaggia separato dall'SQL, niente iniezione.
    */
