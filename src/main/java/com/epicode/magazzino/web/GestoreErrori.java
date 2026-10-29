@@ -11,10 +11,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 @ControllerAdvice
 public class GestoreErrori {
 
-    @ExceptionHandler(RisorsaNonTrovataException.class)
-    @ResponseStatus(HttpStatus.NOT_FOUND)
-    public String nonTrovato(RisorsaNonTrovataException e, Model model) {
-        model.addAttribute("errore", e.getMessage());
-        return "errore";
-    }
+  @ExceptionHandler(RisorsaNonTrovataException.class)
+  @ResponseStatus(HttpStatus.NOT_FOUND)
+  public String nonTrovato(RisorsaNonTrovataException e, Model model) {
+    model.addAttribute("errore", e.getMessage());
+    return "errore";
+  }
 }

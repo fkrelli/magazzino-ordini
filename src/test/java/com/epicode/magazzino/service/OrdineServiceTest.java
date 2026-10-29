@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import com.epicode.magazzino.model.OperazioneNonConsentitaException;
 import com.epicode.magazzino.model.Ordine;
 import com.epicode.magazzino.model.Prodotto;
 import com.epicode.magazzino.model.RichiestaNonValidaException;
@@ -23,45 +24,64 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 class OrdineServiceTest {
 
-    @Autowired
-    private OrdineService ordini;
+  @Autowired
+  private OrdineService ordini;
 
-    @Autowired
-    private ProdottoRepository prodotti;
+  @Autowired
+  private ProdottoRepository prodotti;
 
-    @BeforeEach
-    void prodottiDiTest() {
-        prodotti.save(new Prodotto("T-VITI", "Viti di test", new BigDecimal("2.50"), 20, 5));
-        prodotti.save(new Prodotto("T-MART", "Martello di test", new BigDecimal("15.00"), 3, 1));
-    }
+  @BeforeEach
+  void prodottiDiTest() {
+    prodotti.save(
+        new Prodotto("T-VITI", "Viti di test", new BigDecimal("2.50"), 20, 5));
+    prodotti.save(new Prodotto("T-MART", "Martello di test",
+        new BigDecimal("15.00"), 3, 1));
+  }
 
-    @Test
-    void creaUnOrdineEScalaLeScorte() {
-        Ordine ordine = ordini.crea(new NuovoOrdine("Ferramenta Bianchi", List.of(
-                new NuovoOrdine.Riga("T-VITI", 4),
-                new NuovoOrdine.Riga("T-MART", 1))));
+  @Test
+  void creaUnOrdineEScalaLeScorte() {
+    Ordine ordine = ordini.crea(new NuovoOrdine("Ferramenta Bianchi", List.of(
+        new NuovoOrdine.Riga("T-VITI", 4), new NuovoOrdine.Riga("T-MART", 1))));
 
-        assertNotNull(ordine.getId());
-        assertEquals(new BigDecimal("25.00"), ordine.totale());
-        assertEquals(16, prodotti.findByCodice("T-VITI").orElseThrow().getDisponibili());
-        assertEquals(2, prodotti.findByCodice("T-MART").orElseThrow().getDisponibili());
-    }
+    assertNotNull(ordine.getId());
+    assertEquals(new BigDecimal("25.00"), ordine.totale());
+    assertEquals(16,
+        prodotti.findByCodice("T-VITI").orElseThrow().getDisponibili());
+    assertEquals(2,
+        prodotti.findByCodice("T-MART").orElseThrow().getDisponibili());
+  }
 
-    @Test
-    void prodottoInesistente() {
-        NuovoOrdine richiesta = new NuovoOrdine("Bianchi", List.of(new NuovoOrdine.Riga("NON-ESISTE", 1)));
-        assertThrows(RisorsaNonTrovataException.class, () -> ordini.crea(richiesta));
-    }
+  @Test
+  void prodottoInesistente() {
+    NuovoOrdine richiesta = new NuovoOrdine("Bianchi",
+        List.of(new NuovoOrdine.Riga("NON-ESISTE", 1)));
+    assertThrows(RisorsaNonTrovataException.class,
+        () -> ordini.crea(richiesta));
+  }
 
-    @Test
-    void scortaInsufficiente() {
-        NuovoOrdine richiesta = new NuovoOrdine("Bianchi", List.of(new NuovoOrdine.Riga("T-MART", 4)));
-        assertThrows(ScortaInsufficienteException.class, () -> ordini.crea(richiesta));
-    }
+  @Test
+  void scortaInsufficiente() {
+    NuovoOrdine richiesta = new NuovoOrdine("Bianchi",
+        List.of(new NuovoOrdine.Riga("T-MART", 4)));
+    assertThrows(ScortaInsufficienteException.class,
+        () -> ordini.crea(richiesta));
+  }
 
-    @Test
-    void ordineSenzaRighe() {
-        NuovoOrdine richiesta = new NuovoOrdine("Bianchi", List.of());
-        assertThrows(RichiestaNonValidaException.class, () -> ordini.crea(richiesta));
-    }
+  @Test
+  void loStessoTrackingNonSiUsaPerDueOrdini() {
+    Ordine primo = ordini.crea(
+        new NuovoOrdine("Bianchi", List.of(new NuovoOrdine.Riga("T-VITI", 1))));
+    Ordine secondo = ordini.crea(
+        new NuovoOrdine("Verdi", List.of(new NuovoOrdine.Riga("T-VITI", 1))));
+    ordini.spedisci(primo.getId(), "IT123456789IT");
+    assertThrows(OperazioneNonConsentitaException.class,
+        () -> ordini.spedisci(secondo.getId(), "it123456789it"));
+  }
+
+  @Test
+  void ordineSenzaRighe() {
+    NuovoOrdine richiesta = new NuovoOrdine("Bianchi", List.of());
+    assertThrows(RichiestaNonValidaException.class,
+        () -> ordini.crea(richiesta));
+  }
 }
