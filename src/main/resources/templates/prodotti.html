@@ -10,6 +10,7 @@
         <table>
             <thead>
                 <tr>
+                    <th>ID</th>
                     <th>Codice</th>
                     <th>Nome</th>
                     <th class="num">Prezzo</th>
@@ -21,6 +22,7 @@
             <tbody>
                 <tr th:each="p : ${prodotti}"
                     th:classappend="${p.disponibili == 0} ? 'esaurito' : (${p.daRiassortire()} ? 'sottoscorta' : '')">
+                    <td th:text="${p.id}">1</td>
                     <td><code th:text="${p.codice}">VIT-M6-30</code></td>
                     <td th:text="${p.nome}">Viti</td>
                     <td class="num" th:text="${#numbers.formatDecimal(p.prezzo, 1, 'POINT', 2, 'COMMA')} + ' €'">6,90 €

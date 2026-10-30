@@ -2,6 +2,9 @@ package com.epicode.magazzino.web;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.doReturn;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -9,13 +12,22 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrlPattern;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.epicode.magazzino.model.Prodotto;
+import com.epicode.magazzino.repository.ProdottoRepository;
 import com.epicode.magazzino.service.CatalogoService;
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
+import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
+import org.springframework.transaction.annotation.Transactional;
 
 /** Le pagine principali si aprono e il form crea davvero un ordine. */
 @SpringBootTest
@@ -25,8 +37,11 @@ class PagineTest {
   @Autowired
   private MockMvc mvc;
 
-  @Autowired
+  @MockitoSpyBean
   private CatalogoService catalogo;
+
+  @Autowired
+  private ProdottoRepository prodotti;
 
   @Test
   void elencoProdotti() throws Exception {
@@ -35,6 +50,77 @@ class PagineTest {
         .andExpect(content().string(containsString("Da riassortire")))
         .andExpect(content().string(containsString("sottoscorta"))).andExpect(
             content().string(containsString("/prodotti/GUA-L/riassortimento")));
+  }
+
+  @Test
+  @Transactional
+  void elencoProdottiMostraIdNumericiNellaPrimaColonna() throws Exception {
+    prodotti.save(new Prodotto("ID-TEST-1", "Prodotto ID test A",
+        new BigDecimal("1.00"), 1, 0));
+    prodotti.save(new Prodotto("ID-TEST-2", "Prodotto ID test B",
+        new BigDecimal("1.00"), 1, 0));
+    List<Prodotto> elencoAtteso = prodotti.findAllByOrderByNomeAsc();
+
+    MvcResult risultato = mvc.perform(get("/prodotti"))
+        .andExpect(status().isOk()).andReturn();
+    String html = risultato.getResponse().getContentAsString();
+
+    Matcher intestazioniMatcher =
+        Pattern.compile("(?s)<th(?:\\s[^>]*)?>(.*?)</th>").matcher(html);
+    List<String> intestazioni = new ArrayList<>();
+    while (intestazioniMatcher.find()) {
+      intestazioni.add(testoVisibile(intestazioniMatcher.group(1)));
+    }
+    assertEquals(List.of("ID", "Codice", "Nome", "Prezzo", "Disponibili",
+        "Scorta minima", ""), intestazioni);
+
+    Matcher righeMatcher =
+        Pattern.compile("(?s)<tr(?:\\s[^>]*)?>(.*?)</tr>").matcher(html);
+    assertTrue(righeMatcher.find(), "La tabella deve contenere l'intestazione");
+    List<List<String>> righe = new ArrayList<>();
+    while (righeMatcher.find()) {
+      Matcher celleMatcher =
+          Pattern.compile("(?s)<td(?:\\s[^>]*)?>(.*?)</td>")
+              .matcher(righeMatcher.group(1));
+      List<String> celle = new ArrayList<>();
+      while (celleMatcher.find()) {
+        celle.add(testoVisibile(celleMatcher.group(1)));
+      }
+      righe.add(celle);
+    }
+
+    assertEquals(elencoAtteso.size(), righe.size());
+    assertTrue(elencoAtteso.stream().anyMatch(p -> p.getId() >= 10L),
+        "Il test deve includere almeno un ID con più cifre");
+    for (int indice = 0; indice < elencoAtteso.size(); indice++) {
+      Prodotto prodotto = elencoAtteso.get(indice);
+      assertEquals(7, righe.get(indice).size());
+      assertEquals(prodotto.getId().toString(), righe.get(indice).get(0));
+      assertEquals(prodotto.getCodice(), righe.get(indice).get(1));
+    }
+  }
+
+  @Test
+  void elencoProdottiVuotoMostraLeIntestazioniSenzaRighe() throws Exception {
+    doReturn(List.of()).when(catalogo).elenco();
+
+    String html = mvc.perform(get("/prodotti")).andExpect(status().isOk())
+        .andReturn().getResponse().getContentAsString();
+
+    Matcher intestazioniMatcher =
+        Pattern.compile("(?s)<th(?:\\s[^>]*)?>(.*?)</th>").matcher(html);
+    List<String> intestazioni = new ArrayList<>();
+    while (intestazioniMatcher.find()) {
+      intestazioni.add(testoVisibile(intestazioniMatcher.group(1)));
+    }
+    assertEquals(List.of("ID", "Codice", "Nome", "Prezzo", "Disponibili",
+        "Scorta minima", ""), intestazioni);
+    assertFalse(Pattern.compile("(?s)<tbody>\\s*<tr(?:\\s|>)").matcher(html)
+        .find(), "Un elenco vuoto non deve contenere righe");
+  }
+
+  private String testoVisibile(String html) {
+    return html.replaceAll("(?s)<[^>]*>", "").replaceAll("\\s+", " ").trim();
   }
 
   @Test
