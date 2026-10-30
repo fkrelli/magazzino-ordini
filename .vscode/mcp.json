@@ -5,6 +5,10 @@
       "url": "https://api.githubcopilot.com/mcp/",
       "headers": { "X-MCP-Toolsets": "repos,issues,pull_requests" }
     },
+    "magazzino": {
+      "type": "http",
+      "url": "http://localhost:8080/mcp"
+    },
     "playwright": {
       "type": "stdio",
       "command": "npx",
