@@ -22,6 +22,6 @@ Thymeleaf, H2 in memoria, JUnit 5.
 
 
 ## ENvironmentL
-OS: Debian GNU/Linux stable
+OS: Debian GNU/Linux stable senza Z11 o Wayland, solo il minimo delle applicazioni necessarie installate
 
 OpenJDK 25 or later
