@@ -32,6 +32,7 @@ public class CatalogoService {
 
   @Transactional(readOnly = true)
   public List<Prodotto> elenco() {
+    System.out.println("Elenco prodotti");
     return prodotti.findAllByOrderByNomeAsc();
   }
 
