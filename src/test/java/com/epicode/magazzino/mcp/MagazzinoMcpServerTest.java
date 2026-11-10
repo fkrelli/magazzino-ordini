@@ -66,8 +66,8 @@ class MagazzinoMcpServerTest {
   }
 
   private CallToolResult chiama(String tool, Map<String, Object> argomenti) {
-    return client.callTool(
-        CallToolRequest.builder(tool).arguments(argomenti).build());
+    return client
+        .callTool(CallToolRequest.builder(tool).arguments(argomenti).build());
   }
 
   private String testo(CallToolResult risultato) {

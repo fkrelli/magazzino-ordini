@@ -35,22 +35,16 @@ public class MagazzinoTools {
       Cerca nel catalogo i prodotti il cui codice o nome contiene il testo \
       indicato (maiuscole indifferenti, almeno 2 caratteri). Restituisce al \
       massimo 20 prodotti con prezzo, giacenza e scorta minima; 'trovati' \
-      dice quanti sono in tutto.""", generateOutputSchema = true,
-      annotations = @McpAnnotations(title = "Cerca prodotti",
-          readOnlyHint = true, destructiveHint = false, idempotentHint = true,
-          openWorldHint = false))
-  public ElencoProdotti cercaProdotti(@McpToolParam(
-      description = "Testo da cercare, es. 'viti' oppure 'TAS'") String testo) {
+      dice quanti sono in tutto.""", generateOutputSchema = true, annotations = @McpAnnotations(title = "Cerca prodotti", readOnlyHint = true, destructiveHint = false, idempotentHint = true, openWorldHint = false))
+  public ElencoProdotti cercaProdotti(
+      @McpToolParam(description = "Testo da cercare, es. 'viti' oppure 'TAS'") String testo) {
     return ElencoProdotti.di(catalogo.cerca(testo), MASSIMO_PRODOTTI);
   }
 
   @McpTool(name = "prodotti_sotto_scorta", description = """
       Elenca i prodotti da riassortire: giacenza uguale o inferiore alla \
       scorta minima, dal più scoperto. Usalo per le domande sulle scorte e \
-      prima di proporre un riordino.""", generateOutputSchema = true,
-      annotations = @McpAnnotations(title = "Prodotti sotto scorta",
-          readOnlyHint = true, destructiveHint = false, idempotentHint = true,
-          openWorldHint = false))
+      prima di proporre un riordino.""", generateOutputSchema = true, annotations = @McpAnnotations(title = "Prodotti sotto scorta", readOnlyHint = true, destructiveHint = false, idempotentHint = true, openWorldHint = false))
   public ElencoProdotti prodottiSottoScorta() {
     return ElencoProdotti.di(catalogo.daRiassortire(), MASSIMO_PRODOTTI);
   }
@@ -58,13 +52,9 @@ public class MagazzinoTools {
   @McpTool(name = "dettaglio_ordine", description = """
       Restituisce un ordine dato il suo numero: cliente, stato (CONFERMATO, \
       SPEDITO o ANNULLATO), righe con sconti, spese di spedizione e totale \
-      da pagare. Se l'ordine non esiste restituisce un errore.""",
-      generateOutputSchema = true,
-      annotations = @McpAnnotations(title = "Dettaglio ordine",
-          readOnlyHint = true, destructiveHint = false, idempotentHint = true,
-          openWorldHint = false))
-  public OrdineMcp dettaglioOrdine(@McpToolParam(
-      description = "Numero dell'ordine, es. 3") long numero) {
+      da pagare. Se l'ordine non esiste restituisce un errore.""", generateOutputSchema = true, annotations = @McpAnnotations(title = "Dettaglio ordine", readOnlyHint = true, destructiveHint = false, idempotentHint = true, openWorldHint = false))
+  public OrdineMcp dettaglioOrdine(
+      @McpToolParam(description = "Numero dell'ordine, es. 3") long numero) {
     return OrdineMcp.da(ordini.trova(numero));
   }
 
@@ -73,15 +63,11 @@ public class MagazzinoTools {
       CARICO nello storico. MODIFICA I DATI: usalo solo quando l'utente \
       chiede esplicitamente di riassortire. Quantità da 1 a 1000; nota \
       facoltativa fino a 250 caratteri (es. il numero del documento di \
-      trasporto).""", generateOutputSchema = true,
-      annotations = @McpAnnotations(title = "Riassortisci un prodotto",
-          readOnlyHint = false, destructiveHint = false,
-          idempotentHint = false, openWorldHint = false))
+      trasporto).""", generateOutputSchema = true, annotations = @McpAnnotations(title = "Riassortisci un prodotto", readOnlyHint = false, destructiveHint = false, idempotentHint = false, openWorldHint = false))
   public EsitoRiassortimento riassortisciProdotto(
       @McpToolParam(description = "Codice del prodotto, es. TAS-8") String codice,
       @McpToolParam(description = "Pezzi da aggiungere, da 1 a 1000") int quantita,
-      @McpToolParam(description = "Nota per lo storico, facoltativa",
-          required = false) String nota) {
+      @McpToolParam(description = "Nota per lo storico, facoltativa", required = false) String nota) {
     return EsitoRiassortimento.di(
         catalogo.riassortisci(codice, new Riassortimento(quantita, nota)),
         quantita);
