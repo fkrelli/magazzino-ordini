@@ -124,7 +124,7 @@ jobs:
     # Questo blocco sostituisce quello globale, solo per questo job.
     permissions:
       contents: write
-    # environment: produzione   # con un environment puoi chiedere
+    environment: produzione   # con un environment puoi chiedere
     #                           # l'approvazione di una persona prima del job:
     #                           # https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment
     steps:
@@ -147,7 +147,7 @@ jobs:
       # - GH_TOKEN: il token del job, con i permessi contents: write di sopra.
       # - "$GITHUB_REF_NAME": il nome del tag, es. v0.2.0.
       # - target/*.jar: il jar diventa un allegato della release.
-      # - --draft: resta in bozza, la pubblica una persona.
+
       # - --generate-notes: note dalle PR mergiate dall'ultimo tag; le categorie
       #   si configurano in .github/release.yml:
       #   https://docs.github.com/en/repositories/releasing-projects-on-github/automatically-generated-release-notes
@@ -156,7 +156,7 @@ jobs:
       # Il ">" di YAML unisce le righe con uno spazio: è un comando solo.
       # Variabili disponibili (GITHUB_REF_NAME, GITHUB_SHA, ...):
       # https://docs.github.com/en/actions/learn-github-actions/variables#default-environment-variables
-      - name: Release in bozza
+      - name: Release
         env:
           GH_TOKEN: ${{ github.token }}
         run: >
