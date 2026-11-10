@@ -124,7 +124,7 @@ jobs:
     # Questo blocco sostituisce quello globale, solo per questo job.
     permissions:
       contents: write
-    environment: produzione   # con un environment puoi chiedere
+    environment: produzione     # con un environment puoi chiedere
     #                           # l'approvazione di una persona prima del job:
     #                           # https://docs.github.com/en/actions/deployment/targeting-different-environments/using-environments-for-deployment
     steps:
