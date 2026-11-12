@@ -77,9 +77,14 @@ autenticazione adatta alla produzione.
 ```powershell
 .\mvnw.cmd test              # tutti i test devono essere verdi
 .\mvnw.cmd spotless:apply    # formatta il codice Java
-.\mvnw.cmd verify            # test + verifica dello stile
+.\mvnw.cmd verify            # test + stile + soglia JaCoCo
 .\mvnw.cmd spring-boot:run   # poi apri http://localhost:8080
 ```
+
+`verify` genera il report JaCoCo in `target/site/jacoco/index.html` e richiede
+almeno il 60% di copertura sia delle righe sia dei rami sul codice di produzione.
+Il workflow GitHub Actions esegue `verify`, quindi applica la stessa soglia a
+ogni build CI. Il solo comando `test` esegue i test ma non verifica la soglia.
 
 ## Come è fatto
 

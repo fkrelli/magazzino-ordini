@@ -5,6 +5,9 @@ Il job `build` ripete i test e, solo se sono verdi, il job `release` crea una
 **release in bozza** con il jar allegato. Pubblicarla resta una decisione di una
 persona.
 
+Il [report DORA](metriche-dora.md) descrive i limiti nel distinguere questo job
+da un deploy effettivo nell'environment `produzione`.
+
 ```
 git tag v0.2.0  →  git push origin v0.2.0  →  Actions: build → release
                 →  Releases: bozza con jar e note  →  tu: controlli e pubblichi
