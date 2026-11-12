@@ -1,0 +1,25 @@
+name: Metriche DORA
+
+on:
+  schedule:
+    - cron: "55 15 * * *"
+      timezone: "Europe/Rome"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  deployments: read
+  issues: read
+
+jobs:
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Verifica lo script
+        run: python3 -m unittest discover -s scripts -p 'test_*.py'
+      - name: Genera il report DORA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: python3 scripts/metriche_dora.py

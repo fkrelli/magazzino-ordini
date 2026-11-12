@@ -2,6 +2,7 @@ package com.epicode.magazzino.mcp;
 
 import com.epicode.magazzino.model.Riassortimento;
 import com.epicode.magazzino.service.CatalogoService;
+import com.epicode.magazzino.service.MetricheApplicative;
 import com.epicode.magazzino.service.OrdineService;
 import org.springframework.ai.mcp.annotation.McpTool;
 import org.springframework.ai.mcp.annotation.McpTool.McpAnnotations;
@@ -25,10 +26,13 @@ public class MagazzinoTools {
 
   private final CatalogoService catalogo;
   private final OrdineService ordini;
+  private final MetricheApplicative metriche;
 
-  public MagazzinoTools(CatalogoService catalogo, OrdineService ordini) {
+  public MagazzinoTools(CatalogoService catalogo, OrdineService ordini,
+      MetricheApplicative metriche) {
     this.catalogo = catalogo;
     this.ordini = ordini;
+    this.metriche = metriche;
   }
 
   @McpTool(name = "cerca_prodotti", description = """
@@ -38,7 +42,8 @@ public class MagazzinoTools {
       dice quanti sono in tutto.""", generateOutputSchema = true, annotations = @McpAnnotations(title = "Cerca prodotti", readOnlyHint = true, destructiveHint = false, idempotentHint = true, openWorldHint = false))
   public ElencoProdotti cercaProdotti(
       @McpToolParam(description = "Testo da cercare, es. 'viti' oppure 'TAS'") String testo) {
-    return ElencoProdotti.di(catalogo.cerca(testo), MASSIMO_PRODOTTI);
+    return metriche.misuraMcp("cerca_prodotti",
+        () -> ElencoProdotti.di(catalogo.cerca(testo), MASSIMO_PRODOTTI));
   }
 
   @McpTool(name = "prodotti_sotto_scorta", description = """
@@ -46,7 +51,8 @@ public class MagazzinoTools {
       scorta minima, dal più scoperto. Usalo per le domande sulle scorte e \
       prima di proporre un riordino.""", generateOutputSchema = true, annotations = @McpAnnotations(title = "Prodotti sotto scorta", readOnlyHint = true, destructiveHint = false, idempotentHint = true, openWorldHint = false))
   public ElencoProdotti prodottiSottoScorta() {
-    return ElencoProdotti.di(catalogo.daRiassortire(), MASSIMO_PRODOTTI);
+    return metriche.misuraMcp("prodotti_sotto_scorta",
+        () -> ElencoProdotti.di(catalogo.daRiassortire(), MASSIMO_PRODOTTI));
   }
 
   @McpTool(name = "dettaglio_ordine", description = """
@@ -55,7 +61,8 @@ public class MagazzinoTools {
       da pagare. Se l'ordine non esiste restituisce un errore.""", generateOutputSchema = true, annotations = @McpAnnotations(title = "Dettaglio ordine", readOnlyHint = true, destructiveHint = false, idempotentHint = true, openWorldHint = false))
   public OrdineMcp dettaglioOrdine(
       @McpToolParam(description = "Numero dell'ordine, es. 3") long numero) {
-    return OrdineMcp.da(ordini.trova(numero));
+    return metriche.misuraMcp("dettaglio_ordine",
+        () -> OrdineMcp.da(ordini.trova(numero)));
   }
 
   @McpTool(name = "riassortisci_prodotto", description = """
@@ -68,8 +75,9 @@ public class MagazzinoTools {
       @McpToolParam(description = "Codice del prodotto, es. TAS-8") String codice,
       @McpToolParam(description = "Pezzi da aggiungere, da 1 a 1000") int quantita,
       @McpToolParam(description = "Nota per lo storico, facoltativa", required = false) String nota) {
-    return EsitoRiassortimento.di(
-        catalogo.riassortisci(codice, new Riassortimento(quantita, nota)),
-        quantita);
+    return metriche.misuraMcp("riassortisci_prodotto",
+        () -> EsitoRiassortimento.di(
+            catalogo.riassortisci(codice, new Riassortimento(quantita, nota)),
+            quantita));
   }
 }

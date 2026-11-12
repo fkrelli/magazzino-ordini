@@ -1,0 +1,11 @@
+.git
+.github
+.vscode
+.idea
+.env
+.env.*
+target
+report
+*.db
+*.mv.db
+*.log

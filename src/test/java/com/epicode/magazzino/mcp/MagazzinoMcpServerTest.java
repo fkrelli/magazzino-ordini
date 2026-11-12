@@ -15,6 +15,7 @@ import io.modelcontextprotocol.spec.McpSchema.CallToolResult;
 import io.modelcontextprotocol.spec.McpSchema.GetPromptRequest;
 import io.modelcontextprotocol.spec.McpSchema.TextContent;
 import io.modelcontextprotocol.spec.McpSchema.Tool;
+import io.micrometer.core.instrument.MeterRegistry;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -46,6 +47,9 @@ class MagazzinoMcpServerTest {
 
   @Autowired
   private CatalogoService catalogo;
+
+  @Autowired
+  private MeterRegistry registro;
 
   private McpSyncClient client;
 
@@ -106,11 +110,16 @@ class MagazzinoMcpServerTest {
 
   @Test
   void unOrdineCheNonEsisteEUnErroreCheIlModelloPuoLeggere() {
+    double chiamate = registro.counter("magazzino.mcp.chiamate", "strumento",
+        "dettaglio_ordine", "esito", "errore_dominio").count();
+
     CallToolResult risultato = chiama("dettaglio_ordine",
         Map.of("numero", 999999));
 
     assertTrue(risultato.isError());
     assertTrue(testo(risultato).contains("Ordine 999999 non trovato"));
+    assertEquals(chiamate + 1, registro.counter("magazzino.mcp.chiamate",
+        "strumento", "dettaglio_ordine", "esito", "errore_dominio").count());
   }
 
   @Test
@@ -128,12 +137,20 @@ class MagazzinoMcpServerTest {
   @Test
   void ilRiassortimentoAumentaLaGiacenza() {
     int prima = catalogo.trova(CODICE).getDisponibili();
+    double riassortimenti = registro
+        .counter("magazzino.riassortimenti", "esito", "riuscito").count();
+    double chiamate = registro.counter("magazzino.mcp.chiamate", "strumento",
+        "riassortisci_prodotto", "esito", "successo").count();
 
     CallToolResult risultato = chiama("riassortisci_prodotto",
         Map.of("codice", CODICE, "quantita", 4, "nota", "Test MCP"));
 
     assertFalse(Boolean.TRUE.equals(risultato.isError()));
     assertEquals(prima + 4, catalogo.trova(CODICE).getDisponibili());
+    assertEquals(riassortimenti + 1, registro
+        .counter("magazzino.riassortimenti", "esito", "riuscito").count());
+    assertEquals(chiamate + 1, registro.counter("magazzino.mcp.chiamate",
+        "strumento", "riassortisci_prodotto", "esito", "successo").count());
   }
 
   @Test

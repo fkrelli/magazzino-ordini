@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.epicode.magazzino.service.CatalogoService;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -28,6 +29,9 @@ class PagineTest {
   @Autowired
   private CatalogoService catalogo;
 
+  @Autowired
+  private MeterRegistry registro;
+
   @Test
   void elencoProdotti() throws Exception {
     mvc.perform(get("/prodotti")).andExpect(status().isOk())
@@ -39,18 +43,34 @@ class PagineTest {
 
   @Test
   void ilFormCreaUnOrdineEPortaAlDettaglio() throws Exception {
+    double ordiniCreati = registro
+        .counter("magazzino.ordini", "azione", "creato").count();
+    double casiDusoRiusciti = registro.counter("magazzino.casi_uso",
+        "operazione", "ordine.crea", "esito", "successo").count();
+
     mvc.perform(post("/ordini").param("cliente", "Ferramenta Bianchi")
         .param("righe[0].codice", "GUA-L").param("righe[0].quantita", "2"))
         .andExpect(status().is3xxRedirection())
         .andExpect(redirectedUrlPattern("/ordini/*"));
+
+    assertEquals(ordiniCreati + 1,
+        registro.counter("magazzino.ordini", "azione", "creato").count());
+    assertEquals(casiDusoRiusciti + 1, registro.counter("magazzino.casi_uso",
+        "operazione", "ordine.crea", "esito", "successo").count());
   }
 
   @Test
   void ilFormMostraLErroreSeLaScortaNonBasta() throws Exception {
+    double errori = registro.counter("magazzino.casi_uso", "operazione",
+        "ordine.crea", "esito", "errore_dominio").count();
+
     mvc.perform(post("/ordini").param("cliente", "Ferramenta Bianchi")
         .param("righe[0].codice", "NAS-50").param("righe[0].quantita", "1"))
         .andExpect(status().isOk()).andExpect(content()
             .string(containsString("Scorta insufficiente per NAS-50")));
+
+    assertEquals(errori + 1, registro.counter("magazzino.casi_uso",
+        "operazione", "ordine.crea", "esito", "errore_dominio").count());
   }
 
   @Test
