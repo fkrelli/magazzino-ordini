@@ -18,6 +18,24 @@ scrivere, verificare e rivedere agli agenti.
 | Test | JUnit 5, Spring Boot Test, MockMvc |
 | Build | Maven Wrapper (`mvnw`) |
 
+## Metriche e monitoraggio
+
+Micrometer espone le metriche HTTP, JVM e di processo, oltre alle metriche
+applicative per ordini, riassortimenti, scorte e tool MCP. In esecuzione web:
+
+- `GET /actuator/metrics` elenca le metriche disponibili e permette di
+  consultarne una;
+- `GET /actuator/prometheus` espone le metriche per lo scraping Prometheus;
+- `GET /actuator/health` espone lo stato di salute senza dettagli interni.
+
+Le metriche applicative non includono clienti, codici prodotto, ID ordine o
+messaggi di errore come tag. Il numero di prodotti sotto scorta e il numero
+totale dei prodotti sono gauge aggregati aggiornati ogni 60 secondi.
+
+Gli endpoint Actuator non hanno autenticazione configurata dall'applicazione:
+in ambienti esposti in rete, limitarli alla rete di monitoraggio o proteggerli
+tramite l'infrastruttura prima di renderli raggiungibili.
+
 ## Avvio
 
 ```powershell

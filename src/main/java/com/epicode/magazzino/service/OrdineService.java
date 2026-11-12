@@ -27,16 +27,23 @@ public class OrdineService {
   private final ProdottoRepository prodotti;
   private final MovimentoRepository movimenti;
   private final Clock clock;
+  private final MetricheApplicative metriche;
 
   public OrdineService(OrdineRepository ordini, ProdottoRepository prodotti,
-      MovimentoRepository movimenti, Clock clock) {
+      MovimentoRepository movimenti, Clock clock,
+      MetricheApplicative metriche) {
     this.ordini = ordini;
     this.prodotti = prodotti;
     this.movimenti = movimenti;
     this.clock = clock;
+    this.metriche = metriche;
   }
 
   public Ordine crea(NuovoOrdine richiesta) {
+    return metriche.misuraCaso("ordine.crea", () -> creaOrdine(richiesta));
+  }
+
+  private Ordine creaOrdine(NuovoOrdine richiesta) {
     if (richiesta.righe() == null || richiesta.righe().isEmpty()) {
       throw new RichiestaNonValidaException(
           "Un ordine deve avere almeno una riga");
@@ -54,34 +61,46 @@ public class OrdineService {
       movimenti.save(MovimentoMagazzino.scarico(riga, salvato.getId(),
           LocalDateTime.now(clock)));
     }
+    metriche.incrementaDopoCommit("magazzino.ordini", "azione", "creato");
     return salvato;
   }
 
   @Transactional(readOnly = true)
   public List<Ordine> elenco() {
-    return ordini.findAllByOrderByCreatoIlDesc();
+    return metriche.misuraCaso("ordine.elenco",
+        ordini::findAllByOrderByCreatoIlDesc);
   }
 
   @Transactional(readOnly = true)
   public Ordine trova(Long id) {
+    return metriche.misuraCaso("ordine.trova", () -> trovaOrdine(id));
+  }
+
+  private Ordine trovaOrdine(Long id) {
     return ordini.findById(id).orElseThrow(
         () -> new RisorsaNonTrovataException("Ordine " + id + " non trovato"));
   }
 
   public Ordine spedisci(Long id) {
-    Ordine ordine = trova(id);
-    ordine.spedisci();
-    return ordine;
+    return metriche.misuraCaso("ordine.spedisci", () -> {
+      Ordine ordine = trovaOrdine(id);
+      ordine.spedisci();
+      metriche.incrementaDopoCommit("magazzino.ordini", "azione", "spedito");
+      return ordine;
+    });
   }
 
   public Ordine annulla(Long id) {
-    Ordine ordine = trova(id);
-    ordine.annulla();
-    // R5: i pezzi rientrati diventano un RESO per riga
-    for (RigaOrdine riga : ordine.getRighe()) {
-      movimenti.save(MovimentoMagazzino.reso(riga, ordine.getId(),
-          LocalDateTime.now(clock)));
-    }
-    return ordine;
+    return metriche.misuraCaso("ordine.annulla", () -> {
+      Ordine ordine = trovaOrdine(id);
+      ordine.annulla();
+      // R5: i pezzi rientrati diventano un RESO per riga
+      for (RigaOrdine riga : ordine.getRighe()) {
+        movimenti.save(MovimentoMagazzino.reso(riga, ordine.getId(),
+            LocalDateTime.now(clock)));
+      }
+      metriche.incrementaDopoCommit("magazzino.ordini", "azione", "annullato");
+      return ordine;
+    });
   }
 }
