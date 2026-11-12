@@ -22,18 +22,23 @@ public class CatalogoService {
   private final ProdottoRepository prodotti;
   private final MovimentoRepository movimenti;
   private final Clock clock;
+  private final MetricheApplicative metriche;
 
   public CatalogoService(ProdottoRepository prodotti,
-      MovimentoRepository movimenti, Clock clock) {
+      MovimentoRepository movimenti, Clock clock,
+      MetricheApplicative metriche) {
     this.prodotti = prodotti;
     this.movimenti = movimenti;
     this.clock = clock;
+    this.metriche = metriche;
   }
 
   @Transactional(readOnly = true)
   public List<Prodotto> elenco() {
-    System.out.println("Elenco prodotti");
-    return prodotti.findAllByOrderByNomeAsc();
+    return metriche.misuraCaso("catalogo.elenco", () -> {
+      System.out.println("Elenco prodotti");
+      return prodotti.findAllByOrderByNomeAsc();
+    });
   }
 
   /**
@@ -42,17 +47,19 @@ public class CatalogoService {
    */
   @Transactional(readOnly = true)
   public List<Prodotto> cerca(String testo) {
-    String cercato = testo == null
-        ? ""
-        : testo.strip().toLowerCase(Locale.ROOT);
-    if (cercato.length() < 2) {
-      throw new RichiestaNonValidaException(
-          "Scrivi almeno 2 caratteri da cercare");
-    }
-    return prodotti.findAllByOrderByNomeAsc().stream()
-        .filter(p -> p.getCodice().toLowerCase(Locale.ROOT).contains(cercato)
-            || p.getNome().toLowerCase(Locale.ROOT).contains(cercato))
-        .toList();
+    return metriche.misuraCaso("catalogo.cerca", () -> {
+      String cercato = testo == null
+          ? ""
+          : testo.strip().toLowerCase(Locale.ROOT);
+      if (cercato.length() < 2) {
+        throw new RichiestaNonValidaException(
+            "Scrivi almeno 2 caratteri da cercare");
+      }
+      return prodotti.findAllByOrderByNomeAsc().stream()
+          .filter(p -> p.getCodice().toLowerCase(Locale.ROOT).contains(cercato)
+              || p.getNome().toLowerCase(Locale.ROOT).contains(cercato))
+          .toList();
+    });
   }
 
   /**
@@ -61,17 +68,22 @@ public class CatalogoService {
    */
   @Transactional(readOnly = true)
   public List<Prodotto> daRiassortire() {
-    return prodotti.findAllByOrderByNomeAsc().stream()
-        .filter(Prodotto::daRiassortire)
-        .sorted(Comparator
-            .comparingInt(
-                (Prodotto p) -> p.getScortaMinima() - p.getDisponibili())
-            .reversed().thenComparing(Prodotto::getCodice))
-        .toList();
+    return metriche
+        .misuraCaso("catalogo.sotto_scorta",
+            () -> prodotti.findAllByOrderByNomeAsc().stream()
+                .filter(Prodotto::daRiassortire)
+                .sorted(Comparator.comparingInt(
+                    (Prodotto p) -> p.getScortaMinima() - p.getDisponibili())
+                    .reversed().thenComparing(Prodotto::getCodice))
+                .toList());
   }
 
   @Transactional(readOnly = true)
   public Prodotto trova(String codice) {
+    return metriche.misuraCaso("catalogo.trova", () -> trovaProdotto(codice));
+  }
+
+  private Prodotto trovaProdotto(String codice) {
     return prodotti.findByCodice(codice)
         .orElseThrow(() -> new RisorsaNonTrovataException(
             "Prodotto " + codice + " non trovato"));
@@ -82,16 +94,23 @@ public class CatalogoService {
    * movimento insieme.
    */
   public Prodotto riassortisci(String codice, Riassortimento richiesta) {
-    Prodotto prodotto = trova(codice);
-    prodotto.riassortisci(richiesta.quantita());
-    movimenti.save(MovimentoMagazzino.carico(prodotto, richiesta,
-        LocalDateTime.now(clock)));
-    return prodotto;
+    return metriche.misuraCaso("catalogo.riassortisci", () -> {
+      Prodotto prodotto = trovaProdotto(codice);
+      prodotto.riassortisci(richiesta.quantita());
+      movimenti.save(MovimentoMagazzino.carico(prodotto, richiesta,
+          LocalDateTime.now(clock)));
+      metriche.incrementaDopoCommit("magazzino.riassortimenti", "esito",
+          "riuscito");
+      metriche.incrementaDopoCommit("magazzino.riassortimenti.pezzi",
+          richiesta.quantita(), "unita", "pezzi");
+      return prodotto;
+    });
   }
 
   /** R6: lo storico, dal movimento più recente. */
   @Transactional(readOnly = true)
   public List<MovimentoMagazzino> movimenti() {
-    return movimenti.findAllByOrderByCreatoIlDescIdDesc();
+    return metriche.misuraCaso("catalogo.movimenti",
+        movimenti::findAllByOrderByCreatoIlDescIdDesc);
   }
 }
