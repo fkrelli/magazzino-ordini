@@ -36,6 +36,42 @@ Gli endpoint Actuator non hanno autenticazione configurata dall'applicazione:
 in ambienti esposti in rete, limitarli alla rete di monitoraggio o proteggerli
 tramite l'infrastruttura prima di renderli raggiungibili.
 
+### Stack locale con Grafana
+
+Servono Docker Engine e Docker Compose. Copiare `.env.example` in `.env`
+e compilare `GRAFANA_ADMIN_USER` e `GRAFANA_ADMIN_PASSWORD` con credenziali
+locali personali (non inserire segreti nel repository). Per esempio:
+
+```powershell
+Copy-Item .env.example .env
+# Modificare .env con il proprio editor prima di avviare.
+docker compose up --build -d
+```
+
+Le porte sono legate a `127.0.0.1`: applicazione
+<http://127.0.0.1:8080>, Prometheus <http://127.0.0.1:9090/targets> e
+Grafana <http://127.0.0.1:3000>. Accedere a Grafana con le credenziali
+impostate e aprire la dashboard **Magazzino & Ordini**; il datasource
+Prometheus è provisionato automaticamente. Prometheus interroga
+`app:8080/actuator/prometheus` ogni 15 secondi sulla rete Compose.
+
+Visitare le pagine e usare i tool MCP per generare traffico: i contatori
+appaiono solo dopo la prima operazione e rate e p95 richiedono almeno due
+scrape con dati. Le scorte sono aggiornate ogni 60 secondi. I p95 sono stime
+da histogram e `increase` è una stima sull'intervallo, non un conteggio esatto.
+
+```powershell
+docker compose down           # arresta i servizi, conserva i volumi
+```
+
+I volumi nominati conservano lo storico Prometheus e i dati Grafana.
+Le credenziali iniziali Grafana sono applicate solo alla creazione del database
+Grafana: modificare `.env` non cambia la password di un utente già esistente.
+Il database H2 dell'applicazione è invece effimero: a ogni riavvio del
+container riparte dal catalogo iniziale e gli ordini e le modifiche vanno persi.
+Il setup è solo per sviluppo locale: non comprende TLS, alerting né
+autenticazione adatta alla produzione.
+
 ## Avvio
 
 ```powershell
